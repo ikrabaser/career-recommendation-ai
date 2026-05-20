@@ -1,5 +1,7 @@
 import streamlit as st
 import pandas as pd
+import tempfile
+from pypdf import PdfReader
 from sentence_transformers import SentenceTransformer
 from sklearn.metrics.pairwise import cosine_similarity
 
@@ -110,6 +112,10 @@ col1, col2 = st.columns([1, 1])
 
 with col1:
     st.subheader("📝 Profil Bilgilerini Gir")
+    uploaded_file = st.file_uploader(
+    "CV PDF dosyanı yükle",
+    type=["pdf"]
+)
 
     user_input = st.text_area(
         "Yeteneklerini, ilgi alanlarını veya proje deneyimlerini yaz:",
@@ -131,34 +137,41 @@ with col2:
     )
 
 if analyze_button:
-    if user_input.strip() == "":
-        st.warning("Lütfen analiz için bir metin gir.")
+
+    extracted_text = ""
+
+    if uploaded_file is not None:
+
+        with tempfile.NamedTemporaryFile(delete=False) as tmp_file:
+            tmp_file.write(uploaded_file.read())
+            tmp_path = tmp_file.name
+
+        reader = PdfReader(tmp_path)
+
+        for page in reader.pages:
+            extracted_text += page.extract_text()
+
+        st.success("CV başarıyla analiz edildi.")
+
+    final_input = user_input + " " + extracted_text
+
+    if final_input.strip() == "":
+        st.warning("Lütfen analiz için metin gir veya CV yükle.")
     else:
-        user_embedding = model.encode([user_input])
-        similarities = cosine_similarity(user_embedding, career_embeddings)[0]
+
+        user_embedding = model.encode([final_input])
+
+        similarities = cosine_similarity(
+            user_embedding,
+            career_embeddings
+        )[0]
 
         career_df["similarity_score"] = similarities
-        results = career_df.sort_values(by="similarity_score", ascending=False).head(top_n)
 
-        st.markdown("---")
-        st.subheader("🎯 En Uygun Kariyer Önerileri")
-
-        for index, row in results.iterrows():
-            score_percent = round(row["similarity_score"] * 100, 2)
-
-            st.markdown(f"""
-            <div class="card">
-                <h3>{row["role"]}</h3>
-                <p class="score">Uyumluluk Skoru: %{score_percent}</p>
-                <p><b>Öne Çıkan Yetenekler:</b> {row["skills"]}</p>
-                <p><b>Açıklama:</b> Bu alan, girdiğin yetenek ve ilgi alanlarıyla semantik olarak yüksek benzerlik göstermektedir.</p>
-            </div>
-            """, unsafe_allow_html=True)
-
-        st.subheader("📊 Skor Tablosu")
-        chart_data = results[["role", "similarity_score"]].copy()
-        chart_data["similarity_score"] = chart_data["similarity_score"] * 100
-        st.bar_chart(chart_data.set_index("role"))
+        results = career_df.sort_values(
+            by="similarity_score",
+            ascending=False
+        ).head(top_n)
 
 st.markdown("---")
 
