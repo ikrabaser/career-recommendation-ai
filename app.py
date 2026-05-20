@@ -149,9 +149,14 @@ if analyze_button:
         reader = PdfReader(tmp_path)
 
         for page in reader.pages:
-            extracted_text += page.extract_text()
+            page_text = page.extract_text()
+            if page_text:
+                extracted_text += page_text + " "
 
         st.success("CV başarıyla analiz edildi.")
+
+        with st.expander("📄 CV'den Çıkarılan Metni Göster"):
+            st.write(extracted_text[:2000])
 
     final_input = user_input + " " + extracted_text
 
@@ -160,18 +165,34 @@ if analyze_button:
     else:
 
         user_embedding = model.encode([final_input])
-
-        similarities = cosine_similarity(
-            user_embedding,
-            career_embeddings
-        )[0]
+        similarities = cosine_similarity(user_embedding, career_embeddings)[0]
 
         career_df["similarity_score"] = similarities
-
         results = career_df.sort_values(
             by="similarity_score",
             ascending=False
         ).head(top_n)
+
+        st.markdown("---")
+        st.subheader("🎯 En Uygun Kariyer Önerileri")
+
+        for index, row in results.iterrows():
+            score_percent = round(row["similarity_score"] * 100, 2)
+
+            st.markdown(f"""
+            <div class="card">
+                <h3>{row["role"]}</h3>
+                <p class="score">Uyumluluk Skoru: %{score_percent}</p>
+                <p><b>Öne Çıkan Yetenekler:</b> {row["skills"]}</p>
+                <p><b>Açıklama:</b> Bu alan, girdiğin yetenek ve ilgi alanlarıyla semantik olarak yüksek benzerlik göstermektedir.</p>
+            </div>
+            """, unsafe_allow_html=True)
+
+        st.subheader("📊 Skor Tablosu")
+
+        chart_data = results[["role", "similarity_score"]].copy()
+        chart_data["similarity_score"] = chart_data["similarity_score"] * 100
+        st.bar_chart(chart_data.set_index("role"))
 
 st.markdown("---")
 
