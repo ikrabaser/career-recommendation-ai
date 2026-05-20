@@ -1,6 +1,7 @@
 import streamlit as st
 import pandas as pd
 import tempfile
+import plotly.express as px
 from pypdf import PdfReader
 from sentence_transformers import SentenceTransformer
 from sklearn.metrics.pairwise import cosine_similarity
@@ -268,11 +269,38 @@ if analyze_button:
             for step_no, step in enumerate(roadmap, start=1):
                 st.write(f"{step_no}. {step}")
 
-        st.subheader("📊 Skor Tablosu")
+        st.subheader("📊 Kariyer Uyum Skorları")
 
         chart_data = results[["role", "similarity_score"]].copy()
-        chart_data["similarity_score"] = chart_data["similarity_score"] * 100
-        st.bar_chart(chart_data.set_index("role"))
+        chart_data["similarity_score"] = (
+            chart_data["similarity_score"] * 100
+        )
+
+        fig = px.bar(
+            chart_data,
+            x="similarity_score",
+            y="role",
+            orientation="h",
+            text=chart_data["similarity_score"].round(2),
+            labels={
+                "similarity_score": "Uyumluluk Skoru (%)",
+                "role": "Kariyer Alanı"
+            }
+        )
+
+        fig.update_traces(
+            texttemplate='%{text:.2f}%',
+            textposition='inside'
+        )
+
+        fig.update_layout(
+            yaxis=dict(autorange="reversed"),
+            height=400,
+            margin=dict(l=20, r=20, t=20, b=20)
+        )
+
+        
+        st.plotly_chart(fig, use_container_width=True)
 
 st.markdown("---")
 
