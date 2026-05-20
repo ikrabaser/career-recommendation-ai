@@ -138,7 +138,28 @@ roadmaps = {
 career_df = pd.DataFrame(career_data)
 
 career_embeddings = model.encode(career_df["description"].tolist())
+skill_keywords = [
+    "Python", "Java", "C#", "C++", "JavaScript", "HTML", "CSS",
+    "React", "Node.js", "Flask", "Django", "SQL", "PostgreSQL",
+    "MongoDB", "Streamlit", "Machine Learning", "Deep Learning",
+    "TensorFlow", "PyTorch", "Pandas", "NumPy", "Scikit-learn",
+    "Data Analysis", "Data Science", "NLP", "Computer Vision",
+    "Cybersecurity", "Cryptography", "Penetration Testing",
+    "Unity", "Game Development", "VR", "AR", "Git", "GitHub",
+    "Docker", "Kubernetes", "API", "REST API", "OOP", "Algorithms",
+    "Data Structures"
+]
 
+def extract_skills(text):
+    found_skills = []
+
+    lower_text = text.lower()
+
+    for skill in skill_keywords:
+        if skill.lower() in lower_text:
+            found_skills.append(skill)
+
+    return sorted(set(found_skills))
 st.markdown("""
 <style>
 .main {
@@ -238,6 +259,11 @@ if analyze_button:
     if final_input.strip() == "":
         st.warning("Lütfen analiz için metin gir veya CV yükle.")
     else:
+        detected_skills = extract_skills(final_input)
+
+        if detected_skills:
+            st.subheader("🔍 Tespit Edilen Teknik Yetenekler")
+            st.write(" | ".join(detected_skills))
 
         user_embedding = model.encode([final_input])
         similarities = cosine_similarity(user_embedding, career_embeddings)[0]
