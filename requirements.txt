@@ -1,8 +1,8 @@
 streamlit
 pandas
-scikit-learn
+numpy
 plotly
-pypdf
-reportlab
+scikit-learn
 sentence-transformers
-torch
+PyPDF2
+reportlab
