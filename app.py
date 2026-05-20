@@ -58,7 +58,81 @@ career_data = [
         "description": "software development, algorithms, data structures, object oriented programming, problem solving, system design, clean code",
         "skills": "Algorithms, Data Structures, OOP, Software Design, Problem Solving"
     }
+    
 ]
+roadmaps = {
+    "AI / Machine Learning Engineer": [
+        "Python Temelleri",
+        "NumPy & Pandas",
+        "Makine Öğrenmesi",
+        "Deep Learning",
+        "TensorFlow / PyTorch",
+        "MLOps & Deployment"
+    ],
+
+    "Data Scientist": [
+        "Python",
+        "Pandas & NumPy",
+        "Veri Analizi",
+        "İstatistik",
+        "Veri Görselleştirme",
+        "Machine Learning"
+    ],
+
+    "Backend Developer": [
+        "Python / Node.js",
+        "REST API",
+        "Flask / Django",
+        "Authentication",
+        "Database Yönetimi",
+        "Deployment"
+    ],
+
+    "Frontend Developer": [
+        "HTML",
+        "CSS",
+        "JavaScript",
+        "React",
+        "Responsive Design",
+        "Frontend Optimization"
+    ],
+
+    "Cybersecurity Specialist": [
+        "Networking",
+        "Linux",
+        "Cryptography",
+        "Web Security",
+        "Penetration Testing",
+        "Ethical Hacking"
+    ],
+
+    "Game Developer": [
+        "C#",
+        "Unity",
+        "Game Physics",
+        "Animation Systems",
+        "Game Optimization",
+        "Multiplayer Systems"
+    ],
+
+    "VR / AR Developer": [
+        "Unity",
+        "C#",
+        "3D Development",
+        "XR Interaction Toolkit",
+        "VR Optimization",
+        "Immersive Experience Design"
+    ],
+
+    "Software Engineer": [
+        "Algorithms",
+        "Data Structures",
+        "OOP",
+        "System Design",
+        "Testing",
+        "Software Architecture"
+    ]
+}
 
 career_df = pd.DataFrame(career_data)
 
@@ -187,6 +261,12 @@ if analyze_button:
                 <p><b>Açıklama:</b> Bu alan, girdiğin yetenek ve ilgi alanlarıyla semantik olarak yüksek benzerlik göstermektedir.</p>
             </div>
             """, unsafe_allow_html=True)
+            roadmap = roadmaps.get(row["role"], [])
+
+            st.markdown("### 🛣️ Öğrenme Yol Haritası")
+
+            for step_no, step in enumerate(roadmap, start=1):
+                st.write(f"{step_no}. {step}")
 
         st.subheader("📊 Skor Tablosu")
 
