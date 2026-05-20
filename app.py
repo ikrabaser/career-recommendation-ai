@@ -1,10 +1,16 @@
 import streamlit as st
 import pandas as pd
-import tempfile
 import plotly.express as px
+import tempfile
+from io import BytesIO
+
 from pypdf import PdfReader
 from sentence_transformers import SentenceTransformer
 from sklearn.metrics.pairwise import cosine_similarity
+
+from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer
+from reportlab.lib.styles import getSampleStyleSheet
+
 
 st.set_page_config(
     page_title="Career Recommendation AI",
@@ -12,11 +18,14 @@ st.set_page_config(
     layout="wide"
 )
 
+
 @st.cache_resource
 def load_model():
     return SentenceTransformer("all-MiniLM-L6-v2")
 
+
 model = load_model()
+
 
 career_data = [
     {
@@ -59,8 +68,9 @@ career_data = [
         "description": "software development, algorithms, data structures, object oriented programming, problem solving, system design, clean code",
         "skills": "Algorithms, Data Structures, OOP, Software Design, Problem Solving"
     }
-    
 ]
+
+
 roadmaps = {
     "AI / Machine Learning Engineer": [
         "Python Temelleri",
@@ -70,7 +80,6 @@ roadmaps = {
         "TensorFlow / PyTorch",
         "MLOps & Deployment"
     ],
-
     "Data Scientist": [
         "Python",
         "Pandas & NumPy",
@@ -79,7 +88,6 @@ roadmaps = {
         "Veri Görselleştirme",
         "Machine Learning"
     ],
-
     "Backend Developer": [
         "Python / Node.js",
         "REST API",
@@ -88,7 +96,6 @@ roadmaps = {
         "Database Yönetimi",
         "Deployment"
     ],
-
     "Frontend Developer": [
         "HTML",
         "CSS",
@@ -97,7 +104,6 @@ roadmaps = {
         "Responsive Design",
         "Frontend Optimization"
     ],
-
     "Cybersecurity Specialist": [
         "Networking",
         "Linux",
@@ -106,7 +112,6 @@ roadmaps = {
         "Penetration Testing",
         "Ethical Hacking"
     ],
-
     "Game Developer": [
         "C#",
         "Unity",
@@ -115,7 +120,6 @@ roadmaps = {
         "Game Optimization",
         "Multiplayer Systems"
     ],
-
     "VR / AR Developer": [
         "Unity",
         "C#",
@@ -124,7 +128,6 @@ roadmaps = {
         "VR Optimization",
         "Immersive Experience Design"
     ],
-
     "Software Engineer": [
         "Algorithms",
         "Data Structures",
@@ -135,9 +138,11 @@ roadmaps = {
     ]
 }
 
-career_df = pd.DataFrame(career_data)
 
+career_df = pd.DataFrame(career_data)
 career_embeddings = model.encode(career_df["description"].tolist())
+
+
 skill_keywords = [
     "Python", "Java", "C#", "C++", "JavaScript", "HTML", "CSS",
     "React", "Node.js", "Flask", "Django", "SQL", "PostgreSQL",
@@ -150,9 +155,9 @@ skill_keywords = [
     "Data Structures"
 ]
 
+
 def extract_skills(text):
     found_skills = []
-
     lower_text = text.lower()
 
     for skill in skill_keywords:
@@ -160,14 +165,50 @@ def extract_skills(text):
             found_skills.append(skill)
 
     return sorted(set(found_skills))
+
+
+def generate_pdf_report(detected_skills, results):
+    buffer = BytesIO()
+    doc = SimpleDocTemplate(buffer)
+    styles = getSampleStyleSheet()
+    elements = []
+
+    elements.append(Paragraph("AI Career Recommendation Report", styles["Title"]))
+    elements.append(Spacer(1, 20))
+
+    skill_text = ", ".join(detected_skills) if detected_skills else "No specific skills detected."
+
+    elements.append(
+        Paragraph(f"<b>Detected Skills:</b> {skill_text}", styles["BodyText"])
+    )
+    elements.append(Spacer(1, 20))
+
+    for _, row in results.iterrows():
+        score = round(row["similarity_score"] * 100, 2)
+        roadmap = roadmaps.get(row["role"], [])
+        roadmap_text = "<br/>".join([f"• {step}" for step in roadmap])
+
+        elements.append(Paragraph(f"<b>{row['role']}</b>", styles["Heading2"]))
+        elements.append(Paragraph(f"Compatibility Score: %{score}", styles["BodyText"]))
+        elements.append(Spacer(1, 10))
+        elements.append(
+            Paragraph(
+                f"<b>Learning Roadmap:</b><br/>{roadmap_text}",
+                styles["BodyText"]
+            )
+        )
+        elements.append(Spacer(1, 25))
+
+    doc.build(elements)
+    buffer.seek(0)
+
+    return buffer
+
+
 st.markdown("""
 <style>
-.main {
-    background-color: #0f172a;
-}
-
 .hero {
-    padding: 35px;
+    padding: 45px;
     border-radius: 25px;
     background: linear-gradient(135deg, #1e3a8a, #7c3aed);
     color: white;
@@ -176,21 +217,22 @@ st.markdown("""
 }
 
 .card {
-    padding: 22px;
+    padding: 24px;
     border-radius: 18px;
     background-color: #f8fafc;
     color: #0f172a;
-    margin-bottom: 15px;
+    margin-bottom: 18px;
     box-shadow: 0px 4px 14px rgba(0,0,0,0.12);
 }
 
 .score {
-    font-size: 22px;
+    font-size: 20px;
     font-weight: bold;
     color: #2563eb;
 }
 </style>
 """, unsafe_allow_html=True)
+
 
 st.markdown("""
 <div class="hero">
@@ -199,19 +241,23 @@ st.markdown("""
 </div>
 """, unsafe_allow_html=True)
 
+
 st.write(
     "Bu uygulama, kullanıcının yazdığı yetenek ve ilgi alanlarını NLP embedding modeliyle analiz eder "
     "ve en uygun kariyer alanlarını benzerlik skoruna göre önerir."
 )
 
+
 col1, col2 = st.columns([1, 1])
+
 
 with col1:
     st.subheader("📝 Profil Bilgilerini Gir")
+
     uploaded_file = st.file_uploader(
-    "CV PDF dosyanı yükle",
-    type=["pdf"]
-)
+        "CV PDF dosyanı yükle",
+        type=["pdf"]
+    )
 
     user_input = st.text_area(
         "Yeteneklerini, ilgi alanlarını veya proje deneyimlerini yaz:",
@@ -219,9 +265,15 @@ with col1:
         placeholder="Örnek: Python, Streamlit, machine learning, Unity, C#, cybersecurity, data analysis..."
     )
 
-    top_n = st.slider("Kaç kariyer önerisi gösterilsin?", 1, 5, 3)
+    top_n = st.slider(
+        "Kaç kariyer önerisi gösterilsin?",
+        1,
+        5,
+        3
+    )
 
     analyze_button = st.button("🚀 Kariyer Önerisi Oluştur")
+
 
 with col2:
     st.subheader("💡 Örnek Girdi")
@@ -231,6 +283,7 @@ with col2:
         "veri analizi ve yapay zeka alanlarına ilgim var. Ayrıca Unity ve C# "
         "ile VR tabanlı simülasyon projeleri üzerinde çalışıyorum."
     )
+
 
 if analyze_button:
 
@@ -258,6 +311,7 @@ if analyze_button:
 
     if final_input.strip() == "":
         st.warning("Lütfen analiz için metin gir veya CV yükle.")
+
     else:
         detected_skills = extract_skills(final_input)
 
@@ -269,6 +323,7 @@ if analyze_button:
         similarities = cosine_similarity(user_embedding, career_embeddings)[0]
 
         career_df["similarity_score"] = similarities
+
         results = career_df.sort_values(
             by="similarity_score",
             ascending=False
@@ -277,7 +332,7 @@ if analyze_button:
         st.markdown("---")
         st.subheader("🎯 En Uygun Kariyer Önerileri")
 
-        for index, row in results.iterrows():
+        for _, row in results.iterrows():
             score_percent = round(row["similarity_score"] * 100, 2)
 
             st.markdown(f"""
@@ -288,19 +343,19 @@ if analyze_button:
                 <p><b>Açıklama:</b> Bu alan, girdiğin yetenek ve ilgi alanlarıyla semantik olarak yüksek benzerlik göstermektedir.</p>
             </div>
             """, unsafe_allow_html=True)
+
             roadmap = roadmaps.get(row["role"], [])
 
-            st.markdown("### 🛣️ Öğrenme Yol Haritası")
+            if roadmap:
+                st.markdown("### 🛣️ Öğrenme Yol Haritası")
 
-            for step_no, step in enumerate(roadmap, start=1):
-                st.write(f"{step_no}. {step}")
+                for step_no, step in enumerate(roadmap, start=1):
+                    st.write(f"{step_no}. {step}")
 
         st.subheader("📊 Kariyer Uyum Skorları")
 
         chart_data = results[["role", "similarity_score"]].copy()
-        chart_data["similarity_score"] = (
-            chart_data["similarity_score"] * 100
-        )
+        chart_data["similarity_score"] = chart_data["similarity_score"] * 100
 
         fig = px.bar(
             chart_data,
@@ -315,8 +370,8 @@ if analyze_button:
         )
 
         fig.update_traces(
-            texttemplate='%{text:.2f}%',
-            textposition='inside'
+            texttemplate="%{text:.2f}%",
+            textposition="inside"
         )
 
         fig.update_layout(
@@ -325,8 +380,23 @@ if analyze_button:
             margin=dict(l=20, r=20, t=20, b=20)
         )
 
-        
-        st.plotly_chart(fig, use_container_width=True)
+        st.plotly_chart(
+            fig,
+            use_container_width=True
+        )
+
+        pdf_buffer = generate_pdf_report(
+            detected_skills,
+            results
+        )
+
+        st.download_button(
+            label="📄 AI Kariyer Raporunu İndir",
+            data=pdf_buffer,
+            file_name="career_report.pdf",
+            mime="application/pdf"
+        )
+
 
 st.markdown("---")
 
