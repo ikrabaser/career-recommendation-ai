@@ -12,7 +12,6 @@ from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer
 from reportlab.lib.styles import getSampleStyleSheet
 
 
-
 st.set_page_config(
     page_title="Career Recommendation AI",
     page_icon="🎯",
@@ -20,194 +19,239 @@ st.set_page_config(
 )
 
 
-
-st.markdown("""
-<style>
-
-.main {
-    background-color: #f7f9fc;
-}
-
-.block-container {
-    padding-top: 2rem;
-    padding-bottom: 2rem;
-}
-
-.stButton>button {
-    background: linear-gradient(90deg, #6a11cb, #2575fc);
-    color: white;
-    border-radius: 12px;
-    border: none;
-    padding: 0.6rem 1.2rem;
-    font-weight: bold;
-    transition: 0.3s;
-}
-
-.stButton>button:hover {
-    transform: scale(1.03);
-    opacity: 0.95;
-}
-
-.card {
-    background-color: white;
-    padding: 1.5rem;
-    border-radius: 18px;
-    box-shadow: 0px 4px 14px rgba(0,0,0,0.08);
-    margin-bottom: 1.5rem;
-}
-
-</style>
-""", unsafe_allow_html=True)
+@st.cache_resource
+def load_model():
+    return SentenceTransformer("all-MiniLM-L6-v2")
 
 
-
-model = SentenceTransformer('all-MiniLM-L6-v2')
-
+model = load_model()
 
 
-career_data = {
-    "AI / Machine Learning Engineer": {
-        "skills": "Python Machine Learning Deep Learning TensorFlow PyTorch NLP Data Science",
-        "roadmap": [
-            "Python Temelleri",
-            "NumPy & Pandas",
-            "Makine Öğrenmesi",
-            "Deep Learning",
-            "TensorFlow / PyTorch",
-            "MLOps & Deployment"
-        ]
+career_data = [
+    {
+        "role": "AI / Machine Learning Engineer",
+        "description": "Python, machine learning, deep learning, TensorFlow, PyTorch, data analysis, model training, artificial intelligence, neural networks, NLP",
+        "skills": "Python, Machine Learning, Deep Learning, TensorFlow, PyTorch, Data Science, NLP"
     },
-
-    "Data Scientist": {
-        "skills": "Python Pandas NumPy Statistics Visualization Machine Learning",
-        "roadmap": [
-            "Python",
-            "Pandas & NumPy",
-            "Veri Analizi",
-            "İstatistik",
-            "Veri Görselleştirme",
-            "Machine Learning"
-        ]
+    {
+        "role": "Data Scientist",
+        "description": "data analysis, statistics, pandas, numpy, visualization, machine learning, predictive modeling, business intelligence",
+        "skills": "Python, Pandas, NumPy, Statistics, Visualization, Machine Learning"
     },
-
-    "Game Developer": {
-        "skills": "Unity C# Game Design Physics OOP",
-        "roadmap": [
-            "C#",
-            "Unity",
-            "Game Physics",
-            "Animation Systems",
-            "Game Optimization",
-            "Multiplayer Systems"
-        ]
+    {
+        "role": "Backend Developer",
+        "description": "server side development, APIs, databases, authentication, Flask, Django, Node.js, SQL, REST API, backend systems",
+        "skills": "Python, Flask, Django, SQL, REST API, Authentication"
     },
-
-    "Software Engineer": {
-        "skills": "Algorithms Data Structures OOP Software Design Problem Solving",
-        "roadmap": [
-            "Algorithms",
-            "Data Structures",
-            "OOP",
-            "System Design",
-            "Testing",
-            "Software Architecture"
-        ]
+    {
+        "role": "Frontend Developer",
+        "description": "user interface, web design, React, JavaScript, HTML, CSS, responsive design, frontend development",
+        "skills": "HTML, CSS, JavaScript, React, UI Design"
     },
-
-    "VR / AR Developer": {
-        "skills": "Unity VR AR C# 3D Simulation Interaction Design",
-        "roadmap": [
-            "Unity",
-            "C#",
-            "3D Development",
-            "XR Interaction Toolkit",
-            "VR Optimization",
-            "Immersive Experience Design"
-        ]
+    {
+        "role": "Cybersecurity Specialist",
+        "description": "network security, ethical hacking, penetration testing, cryptography, authentication, vulnerability analysis, secure systems",
+        "skills": "Cybersecurity, Network Security, Cryptography, Penetration Testing"
+    },
+    {
+        "role": "Game Developer",
+        "description": "Unity, C#, game mechanics, 2D games, 3D games, player movement, physics, game design, interactive systems",
+        "skills": "Unity, C#, Game Design, Physics, OOP"
+    },
+    {
+        "role": "VR / AR Developer",
+        "description": "virtual reality, augmented reality, Unity, immersive environments, simulation, interaction design, therapy simulation, 3D development",
+        "skills": "Unity, VR, AR, C#, 3D Simulation, Interaction Design"
+    },
+    {
+        "role": "Software Engineer",
+        "description": "software development, algorithms, data structures, object oriented programming, problem solving, system design, clean code",
+        "skills": "Algorithms, Data Structures, OOP, Software Design, Problem Solving"
     }
+]
+
+
+roadmaps = {
+    "AI / Machine Learning Engineer": [
+        "Python Temelleri",
+        "NumPy & Pandas",
+        "Makine Öğrenmesi",
+        "Deep Learning",
+        "TensorFlow / PyTorch",
+        "MLOps & Deployment"
+    ],
+    "Data Scientist": [
+        "Python",
+        "Pandas & NumPy",
+        "Veri Analizi",
+        "İstatistik",
+        "Veri Görselleştirme",
+        "Machine Learning"
+    ],
+    "Backend Developer": [
+        "Python / Node.js",
+        "REST API",
+        "Flask / Django",
+        "Authentication",
+        "Database Yönetimi",
+        "Deployment"
+    ],
+    "Frontend Developer": [
+        "HTML",
+        "CSS",
+        "JavaScript",
+        "React",
+        "Responsive Design",
+        "Frontend Optimization"
+    ],
+    "Cybersecurity Specialist": [
+        "Networking",
+        "Linux",
+        "Cryptography",
+        "Web Security",
+        "Penetration Testing",
+        "Ethical Hacking"
+    ],
+    "Game Developer": [
+        "C#",
+        "Unity",
+        "Game Physics",
+        "Animation Systems",
+        "Game Optimization",
+        "Multiplayer Systems"
+    ],
+    "VR / AR Developer": [
+        "Unity",
+        "C#",
+        "3D Development",
+        "XR Interaction Toolkit",
+        "VR Optimization",
+        "Immersive Experience Design"
+    ],
+    "Software Engineer": [
+        "Algorithms",
+        "Data Structures",
+        "OOP",
+        "System Design",
+        "Testing",
+        "Software Architecture"
+    ]
 }
 
 
-
-def extract_text_from_pdf(uploaded_file):
-    pdf_reader = PdfReader(uploaded_file)
-
-    text = ""
-
-    for page in pdf_reader.pages:
-        text += page.extract_text()
-
-    return text
+career_df = pd.DataFrame(career_data)
+career_embeddings = model.encode(career_df["description"].tolist())
 
 
+skill_keywords = [
+    "Python", "Java", "C#", "C++", "JavaScript", "HTML", "CSS",
+    "React", "Node.js", "Flask", "Django", "SQL", "PostgreSQL",
+    "MongoDB", "Streamlit", "Machine Learning", "Deep Learning",
+    "TensorFlow", "PyTorch", "Pandas", "NumPy", "Scikit-learn",
+    "Data Analysis", "Data Science", "NLP", "Computer Vision",
+    "Cybersecurity", "Cryptography", "Penetration Testing",
+    "Unity", "Game Development", "VR", "AR", "Git", "GitHub",
+    "Docker", "Kubernetes", "API", "REST API", "OOP", "Algorithms",
+    "Data Structures"
+]
 
-def create_pdf_report(results):
 
+def extract_skills(text):
+    found_skills = []
+    lower_text = text.lower()
+
+    for skill in skill_keywords:
+        if skill.lower() in lower_text:
+            found_skills.append(skill)
+
+    return sorted(set(found_skills))
+
+
+def generate_pdf_report(detected_skills, results):
     buffer = BytesIO()
-
     doc = SimpleDocTemplate(buffer)
-
     styles = getSampleStyleSheet()
+    elements = []
 
-    story = []
+    elements.append(Paragraph("AI Career Recommendation Report", styles["Title"]))
+    elements.append(Spacer(1, 20))
 
-    title = Paragraph(
-        "AI Career Recommendation Report",
-        styles['Title']
+    skill_text = ", ".join(detected_skills) if detected_skills else "No specific skills detected."
+
+    elements.append(
+        Paragraph(f"<b>Detected Skills:</b> {skill_text}", styles["BodyText"])
     )
+    elements.append(Spacer(1, 20))
 
-    story.append(title)
-    story.append(Spacer(1, 20))
+    for _, row in results.iterrows():
+        score = round(row["similarity_score"] * 100, 2)
+        roadmap = roadmaps.get(row["role"], [])
+        roadmap_text = "<br/>".join([f"• {step}" for step in roadmap])
 
-    for career, score in results:
+        elements.append(Paragraph(f"<b>{row['role']}</b>", styles["Heading2"]))
+        elements.append(Paragraph(f"Compatibility Score: %{score}", styles["BodyText"]))
+        elements.append(Spacer(1, 10))
+        elements.append(
+            Paragraph(
+                f"<b>Learning Roadmap:</b><br/>{roadmap_text}",
+                styles["BodyText"]
+            )
+        )
+        elements.append(Spacer(1, 25))
 
-        text = f"""
-        <b>{career}</b><br/>
-        Uyum Skoru: %{score:.2f}
-        """
-
-        paragraph = Paragraph(text, styles['BodyText'])
-
-        story.append(paragraph)
-        story.append(Spacer(1, 12))
-
-    doc.build(story)
-
+    doc.build(elements)
     buffer.seek(0)
 
     return buffer
 
 
+st.markdown("""
+<style>
+.hero {
+    padding: 45px;
+    border-radius: 25px;
+    background: linear-gradient(135deg, #1e3a8a, #7c3aed);
+    color: white;
+    text-align: center;
+    margin-bottom: 30px;
+}
+
+.card {
+    padding: 24px;
+    border-radius: 18px;
+    background-color: #f8fafc;
+    color: #0f172a;
+    margin-bottom: 18px;
+    box-shadow: 0px 4px 14px rgba(0,0,0,0.12);
+}
+
+.score {
+    font-size: 20px;
+    font-weight: bold;
+    color: #2563eb;
+}
+</style>
+""", unsafe_allow_html=True)
+
 
 st.markdown("""
-<div style="
-padding: 40px;
-border-radius: 25px;
-background: linear-gradient(90deg,#1e3c72,#7b2ff7);
-text-align:center;
-color:white;
-margin-bottom:30px;
-">
-
-<h1 style="font-size:55px;">🎯 Career Recommendation AI</h1>
-
-<h4>
-Semantic NLP & Embedding Based Career Recommendation System
-</h4>
-
+<div class="hero">
+    <h1>🎯 Career Recommendation AI</h1>
+    <p>Semantic NLP & Embedding Based Career Recommendation System</p>
 </div>
 """, unsafe_allow_html=True)
 
-st.write("""
-Bu uygulama, kullanıcının yazdığı yetenek ve ilgi alanlarını NLP embedding modeliyle analiz eder ve en uygun kariyer alanlarını benzerlik skoruna göre önerir.
-""")
+
+st.write(
+    "Bu uygulama, kullanıcının yazdığı yetenek ve ilgi alanlarını NLP embedding modeliyle analiz eder "
+    "ve en uygun kariyer alanlarını benzerlik skoruna göre önerir."
+)
 
 
+col1, col2 = st.columns([1, 1])
 
-col1, col2 = st.columns([2, 2])
 
 with col1:
-
     st.subheader("📝 Profil Bilgilerini Gir")
 
     uploaded_file = st.file_uploader(
@@ -217,8 +261,8 @@ with col1:
 
     user_input = st.text_area(
         "Yeteneklerini, ilgi alanlarını veya proje deneyimlerini yaz:",
-        height=180,
-        placeholder="Örnek: Python, Streamlit, machine learning, Unity, C#, cybersecurity..."
+        height=220,
+        placeholder="Örnek: Python, Streamlit, machine learning, Unity, C#, cybersecurity, data analysis..."
     )
 
     top_n = st.slider(
@@ -228,150 +272,135 @@ with col1:
         3
     )
 
-with col2:
+    analyze_button = st.button("🚀 Kariyer Önerisi Oluştur")
 
+
+with col2:
     st.subheader("💡 Örnek Girdi")
 
-    st.info("""
-Python ile projeler geliştiriyorum. Streamlit, makine öğrenmesi,
-veri analizi ve yapay zeka alanlarına ilgim var.
-Ayrıca Unity ve C# ile VR tabanlı simülasyon projeleri üzerinde çalışıyorum.
-""")
-
-
-
-pdf_text = ""
-
-if uploaded_file is not None:
-    pdf_text = extract_text_from_pdf(uploaded_file)
-
-combined_text = user_input + " " + pdf_text
-
-
-
-if st.button("🚀 Kariyer Önerisi Oluştur"):
-
-    if combined_text.strip() == "":
-        st.warning("Lütfen bir metin gir veya CV yükle.")
-        st.stop()
-
-    user_embedding = model.encode([combined_text])
-
-    scores = []
-
-    detected_skills = []
-
-    for career, info in career_data.items():
-
-        career_embedding = model.encode([info["skills"]])
-
-        similarity = cosine_similarity(
-            user_embedding,
-            career_embedding
-        )[0][0]
-
-        scores.append((career, similarity * 100))
-
-        for skill in info["skills"].split():
-            if skill.lower() in combined_text.lower():
-                detected_skills.append(skill)
-
-    scores = sorted(
-        scores,
-        key=lambda x: x[1],
-        reverse=True
+    st.info(
+        "Python ile projeler geliştiriyorum. Streamlit, makine öğrenmesi, "
+        "veri analizi ve yapay zeka alanlarına ilgim var. Ayrıca Unity ve C# "
+        "ile VR tabanlı simülasyon projeleri üzerinde çalışıyorum."
     )
 
-    top_results = scores[:top_n]
 
-   
-    st.markdown("---")
+if analyze_button:
 
-    st.subheader("🔎 Tespit Edilen Teknik Yetenekler")
+    extracted_text = ""
 
-    unique_skills = sorted(set(detected_skills))
+    if uploaded_file is not None:
 
-    if unique_skills:
-        st.write(" | ".join(unique_skills))
+        with tempfile.NamedTemporaryFile(delete=False) as tmp_file:
+            tmp_file.write(uploaded_file.read())
+            tmp_path = tmp_file.name
+
+        reader = PdfReader(tmp_path)
+
+        for page in reader.pages:
+            page_text = page.extract_text()
+            if page_text:
+                extracted_text += page_text + " "
+
+        st.success("CV başarıyla analiz edildi.")
+
+        with st.expander("📄 CV'den Çıkarılan Metni Göster"):
+            st.write(extracted_text[:2000])
+
+    final_input = user_input + " " + extracted_text
+
+    if final_input.strip() == "":
+        st.warning("Lütfen analiz için metin gir veya CV yükle.")
+
     else:
-        st.write("Belirgin teknik yetenek tespit edilemedi.")
+        detected_skills = extract_skills(final_input)
 
-  
+        if detected_skills:
+            st.subheader("🔍 Tespit Edilen Teknik Yetenekler")
+            st.write(" | ".join(detected_skills))
 
-    st.markdown("---")
+        user_embedding = model.encode([final_input])
+        similarities = cosine_similarity(user_embedding, career_embeddings)[0]
 
-    st.subheader("🎯 En Uygun Kariyer Önerileri")
+        career_df["similarity_score"] = similarities
 
-    for career, score in top_results:
+        results = career_df.sort_values(
+            by="similarity_score",
+            ascending=False
+        ).head(top_n)
 
-        st.markdown(
-            f"""
+        st.markdown("---")
+        st.subheader("🎯 En Uygun Kariyer Önerileri")
+
+        for _, row in results.iterrows():
+            score_percent = round(row["similarity_score"] * 100, 2)
+
+            st.markdown(f"""
             <div class="card">
-
-            <h2>{career}</h2>
-
-            <h4 style="color:#2563eb;">
-            Uyumluluk Skoru: %{score:.2f}
-            </h4>
-
-            <p>
-            <b>Öne Çıkan Yetenekler:</b>
-            {career_data[career]["skills"]}
-            </p>
-
-            <p>
-            <b>Açıklama:</b>
-            Bu alan, girdiğin yetenek ve ilgi alanlarıyla
-            semantik olarak yüksek benzerlik göstermektedir.
-            </p>
-
+                <h3>{row["role"]}</h3>
+                <p class="score">Uyumluluk Skoru: %{score_percent}</p>
+                <p><b>Öne Çıkan Yetenekler:</b> {row["skills"]}</p>
+                <p><b>Açıklama:</b> Bu alan, girdiğin yetenek ve ilgi alanlarıyla semantik olarak yüksek benzerlik göstermektedir.</p>
             </div>
-            """,
-            unsafe_allow_html=True
+            """, unsafe_allow_html=True)
+
+            roadmap = roadmaps.get(row["role"], [])
+
+            if roadmap:
+                st.markdown("### 🛣️ Öğrenme Yol Haritası")
+
+                for step_no, step in enumerate(roadmap, start=1):
+                    st.write(f"{step_no}. {step}")
+
+        st.subheader("📊 Kariyer Uyum Skorları")
+
+        chart_data = results[["role", "similarity_score"]].copy()
+        chart_data["similarity_score"] = chart_data["similarity_score"] * 100
+
+        fig = px.bar(
+            chart_data,
+            x="similarity_score",
+            y="role",
+            orientation="h",
+            text=chart_data["similarity_score"].round(2),
+            labels={
+                "similarity_score": "Uyumluluk Skoru (%)",
+                "role": "Kariyer Alanı"
+            }
         )
 
-        st.subheader("🗺️ Öğrenme Yol Haritası")
+        fig.update_traces(
+            texttemplate="%{text:.2f}%",
+            textposition="inside"
+        )
 
-        for i, step in enumerate(career_data[career]["roadmap"], start=1):
-            st.write(f"{i}. {step}")
+        fig.update_layout(
+            yaxis=dict(autorange="reversed"),
+            height=400,
+            margin=dict(l=20, r=20, t=20, b=20)
+        )
 
-   
+        st.plotly_chart(
+            fig,
+            use_container_width=True
+        )
 
-    st.markdown("---")
+        pdf_buffer = generate_pdf_report(
+            detected_skills,
+            results
+        )
 
-    st.subheader("📊 Kariyer Uyum Skorları")
-
-    df = pd.DataFrame(
-        top_results,
-        columns=["Kariyer Alanı", "Uyumluluk Skoru"]
-    )
-
-    fig = px.bar(
-        df,
-        x="Uyumluluk Skoru",
-        y="Kariyer Alanı",
-        orientation="h",
-        text="Uyumluluk Skoru"
-    )
-
-    fig.update_layout(height=500)
-
-    st.plotly_chart(fig, use_container_width=True)
-
-
-    pdf_buffer = create_pdf_report(top_results)
-
-    st.download_button(
-        label="📄 AI Kariyer Raporunu İndir",
-        data=pdf_buffer,
-        file_name="career_report.pdf",
-        mime="application/pdf"
-    )
+        st.download_button(
+            label="📄 AI Kariyer Raporunu İndir",
+            data=pdf_buffer,
+            file_name="career_report.pdf",
+            mime="application/pdf"
+        )
 
 
 st.markdown("---")
 
 st.caption(
-    "Developed with Streamlit, SentenceTransformers and Scikit-learn | "
+    "Developed with Streamlit, Sentence Transformers and Scikit-learn | "
     "NLP Embedding Based Career Recommendation System"
 )
